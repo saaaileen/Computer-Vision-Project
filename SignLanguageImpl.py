@@ -1,4 +1,3 @@
-# ...existing code...
 import cv2
 import joblib
 from collections import deque, Counter
