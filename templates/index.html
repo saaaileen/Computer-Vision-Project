@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SignSense AI - Real-time ASL Recognition</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    
+    <!-- MediaPipe Hands & Camera CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-hands-asl-interpreting"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>SignSense <span class="highlight">AI</span></h1>
+                    <p class="tagline">American Sign Language SVM Classifier</p>
+                </div>
+            </div>
+            
+            <div class="header-badges">
+                <div class="badge status-badge" id="backend-status">
+                    <span class="indicator red"></span>
+                    <span class="text">Connecting Server...</span>
+                </div>
+                <div class="badge model-badge">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>SVM (MediaPipe)</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- MAIN CONTENT GRID -->
+        <main class="app-main">
+            <!-- LEFT PANEL: CAMERA VIEWPORT -->
+            <section class="viewport-section">
+                <div class="card glass-card camera-card">
+                    <div class="card-header">
+                        <div class="header-title">
+                            <i class="fa-solid fa-video"></i>
+                            <h2>Live Stream</h2>
+                        </div>
+                        <div class="stream-telemetry">
+                            <span class="telemetry-item">
+                                <i class="fa-solid fa-bolt"></i> FPS: <span id="fps-counter" class="mono">0</span>
+                            </span>
+                            <span class="telemetry-item">
+                                <i class="fa-solid fa-network-wired"></i> Latency: <span id="latency-counter" class="mono">0</span>ms
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="video-wrapper">
+                        <video id="webcam" autoplay playsinline muted></video>
+                        <canvas id="landmark-canvas"></canvas>
+                        
+                        <div class="viewport-overlay" id="loading-overlay">
+                            <div class="spinner"></div>
+                            <p>Initializing MediaPipe Hands...</p>
+                        </div>
+                        
+                        <div class="viewport-overlay hidden" id="camera-prompt-overlay">
+                            <i class="fa-solid fa-camera-rotate prompt-icon"></i>
+                            <button class="btn btn-primary" id="btn-enable-camera">
+                                <i class="fa-solid fa-plug"></i> Start Camera Stream
+                            </button>
+                            <p class="prompt-sub">Please allow camera permissions when prompted.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="viewport-controls">
+                        <button class="btn btn-secondary active" id="btn-toggle-camera" title="Toggle Camera">
+                            <i class="fa-solid fa-pause"></i> <span>Pause Stream</span>
+                        </button>
+                        <button class="btn btn-secondary" id="btn-toggle-mirror" title="Toggle Mirror View">
+                            <i class="fa-solid fa-arrows-left-right"></i> <span>Mirror View</span>
+                        </button>
+                        <button class="btn btn-secondary active" id="btn-toggle-landmarks" title="Toggle Skeleton Overlay">
+                            <i class="fa-solid fa-chart-line"></i> <span>Show Landmarks</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- RIGHT PANEL: PREDICTION & SPELLING -->
+            <section class="prediction-section">
+                <!-- HERO PREDICTION CARD -->
+                <div class="card glass-card prediction-card">
+                    <div class="card-header">
+                        <div class="header-title">
+                            <i class="fa-solid fa-fingerprint"></i>
+                            <h2>Current Gesture</h2>
+                        </div>
+                        <div class="stability-container">
+                            <span class="label">Stability:</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="stability-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="prediction-hero-body">
+                        <div class="predicted-char-container">
+                            <span id="predicted-character" class="empty-char">—</span>
+                        </div>
+                        <div class="gesture-sub-status">
+                            <p id="gesture-instruction">Position your hand in front of the camera</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SPELLING COMPOSER -->
+                <div class="card glass-card composer-card">
+                    <div class="card-header">
+                        <div class="header-title">
+                            <i class="fa-solid fa-keyboard"></i>
+                            <h2>Spelling Composer</h2>
+                        </div>
+                        <span class="composer-mode">Auto-add: <b class="highlight">1.0s Hold</b></span>
+                    </div>
+                    
+                    <div class="composer-body">
+                        <div class="composed-text-area" id="composed-text-display" placeholder="Spelled words will appear here..."></div>
+                        
+                        <div class="composer-controls">
+                            <button class="btn btn-secondary" id="btn-backspace" title="Delete Last Character">
+                                <i class="fa-solid fa-backspace"></i> Backspace
+                            </button>
+                            <button class="btn btn-secondary" id="btn-space" title="Insert Space">
+                                <i class="fa-solid fa-square-minus"></i> Space
+                            </button>
+                            <button class="btn btn-danger" id="btn-clear" title="Clear All Text">
+                                <i class="fa-solid fa-trash-can"></i> Clear
+                            </button>
+                            <button class="btn btn-accent" id="btn-speak" title="Speak Spelled Sentence">
+                                <i class="fa-solid fa-volume-high"></i> Speak
+                            </button>
+                            <button class="btn btn-primary" id="btn-copy" title="Copy to Clipboard">
+                                <i class="fa-solid fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- ASL REFERENCE GUIDE -->
+        <section class="reference-section">
+            <div class="card glass-card reference-card">
+                <div class="card-header collapse-trigger" id="ref-header">
+                    <div class="header-title">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <h2>ASL Gesture Reference Guide</h2>
+                    </div>
+                    <i class="fa-solid fa-chevron-down toggle-icon" id="ref-chevron"></i>
+                </div>
+                
+                <div class="reference-body collapsed" id="ref-body">
+                    <p class="ref-intro">This reference table displays the letters (A-Z) and numbers (0-9) supported by the SVM model. Form the signs in front of your camera to trigger predictions.</p>
+                    
+                    <div class="ref-tabs">
+                        <button class="tab-btn active" data-tab="letters">Letters (A-Z)</button>
+                        <button class="tab-btn" data-tab="numbers">Numbers (0-9)</button>
+                    </div>
+                    
+                    <!-- LETTERS GRID -->
+                    <div class="tab-content active" id="tab-letters">
+                        <div class="reference-grid">
+                            <!-- A-Z Reference items will be injected by JavaScript dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- NUMBERS GRID -->
+                    <div class="tab-content" id="tab-numbers">
+                        <div class="reference-grid">
+                            <!-- 0-9 Reference items will be injected by JavaScript dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- FOOTER -->
+        <footer class="app-footer-bar">
+            <p>&copy; 2026 SignSense AI. Built with FastAPI, SVM, and MediaPipe.</p>
+            <div class="footer-links">
+                <span>Version 1.0.0</span>
+                <span class="divider">|</span>
+                <a href="#" class="highlight"><i class="fa-brands fa-github"></i> Source</a>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Custom JS -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
