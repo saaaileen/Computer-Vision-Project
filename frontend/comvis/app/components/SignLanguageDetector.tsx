@@ -134,134 +134,138 @@ export default function SignLanguageDetector() {
   };
 
   return (
-    <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8 overflow-auto">
-      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-7xl flex-col gap-6">
-        <section className="overflow-hidden rounded-3xl border border-white/10 bg-(--surface) shadow-[0_18px_50px_rgba(2,8,23,0.28)]">
-          <div className="px-6 py-8 sm:px-8 sm:py-9 lg:px-10">
+    <main className="w-full h-full px-4 py-6 overflow-scroll">
+      <div className="mx-auto flex h-[calc(100vh-3rem)] w-full max-w-7xl flex-col gap-6 ">
+        <section className='grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)] flex-1'>
+          <div className="flex flex-col">
+            <div className="px-6 py-8 sm:px-8 sm:py-9 lg:px-10">
 
-            <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
-              <div className="max-w-3xl">
-                <div className="mb-5 flex flex-wrap items-center gap-3 text-[0.68rem] uppercase tracking-[0.26em] text-(--muted)">
-                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono">
-                    Live ASL recognition
-                  </span>
-                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono ${statusCopy.tone}`}>
-                    <span className={`h-2 w-2 rounded-full ${statusCopy.dot} animate-pulse`} />
-                    {statusCopy.label}
-                  </span>
-                </div>
-
-                <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-[3.5rem]">
-                  Computer Vision Project
-                </h1>
-                <p className="mt-4 max-w-2xl text-base leading-7 text-(--muted) sm:text-[1.05rem]">
-                  Keep the webcam central, surface the latest prediction without noise, and make the backend state obvious at a glance.
-                </p>
-
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <button
-                    onClick={handleStart}
-                    disabled={isRunning || apiStatus === 'disconnected'}
-                    className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 ${isRunning || apiStatus === 'disconnected'
-                      ? 'cursor-not-allowed border border-white/10 bg-white/5 text-slate-500'
-                      : 'border border-[#7fb7ff]/30 bg-[#8dd6ff] text-slate-950 shadow-[0_12px_30px_rgba(99,168,255,0.28)] hover:-translate-y-0.5 hover:bg-white'
-                      }`}
-                  >
-                    Start detection
-                  </button>
-                  <button
-                    onClick={handleStop}
-                    disabled={!isRunning}
-                    className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 ${!isRunning
-                      ? 'cursor-not-allowed border border-white/10 bg-white/5 text-slate-500'
-                      : 'border border-white/10 bg-white/10 text-white hover:-translate-y-0.5 hover:bg-white/15'
-                      }`}
-                  >
-                    Stop
-                  </button>
-                  <button
-                    onClick={checkApiConnection}
-                    className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
-                  >
-                    Retry backend
-                  </button>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                {quickStats.map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-2xl border border-white/10 bg-(--surface-strong) px-4 py-4"
-                  >
-                    <p className="text-[0.68rem] uppercase tracking-[0.24em] text-(--muted)">
-                      {item.label}
-                    </p>
-                    <p className="mt-2 text-lg font-semibold text-white">
-                      {item.value}
-                    </p>
+              <div className="gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+                <div className="max-w-3xl">
+                  <div className="mb-5 flex flex-wrap items-center gap-3 text-[0.68rem] uppercase tracking-[0.26em] text-(--muted)">
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono">
+                      Live ASL recognition
+                    </span>
+                    <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono ${statusCopy.tone}`}>
+                      <span className={`h-2 w-2 rounded-full ${statusCopy.dot} animate-pulse`} />
+                      {statusCopy.label}
+                    </span>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
-          <div className="overflow-hidden rounded-3xl border border-white/10 bg-(--surface) shadow-[0_18px_50px_rgba(2,8,23,0.24)] ">
-            <div className="border-b border-white/10 px-5 py-4 sm:px-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-[0.68rem] uppercase tracking-[0.28em] text-(--muted)">
-                    Camera feed
+                  <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-[3.5rem]">
+                    Computer Vision Project
+                  </h1>
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-(--muted) sm:text-[1.05rem]">
+                    Keep the webcam central, surface the latest prediction without noise, and make the backend state obvious at a glance.
                   </p>
-                  <h2 className="mt-1 text-lg font-semibold text-white">
-                    Web camera stage
-                  </h2>
+
+                  <div className="mt-7 flex flex-wrap gap-3">
+                    <button
+                      onClick={handleStart}
+                      disabled={isRunning || apiStatus === 'disconnected'}
+                      className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 ${isRunning || apiStatus === 'disconnected'
+                        ? 'cursor-not-allowed border border-white/10 bg-white/5 text-slate-500'
+                        : 'border border-[#7fb7ff]/30 bg-[#8dd6ff] text-slate-950 shadow-[0_12px_30px_rgba(99,168,255,0.28)] hover:-translate-y-0.5 hover:bg-white'
+                        }`}
+                    >
+                      Start detection
+                    </button>
+                    <button
+                      onClick={handleStop}
+                      disabled={!isRunning}
+                      className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 ${!isRunning
+                        ? 'cursor-not-allowed border border-white/10 bg-white/5 text-slate-500'
+                        : 'border border-white/10 bg-white/10 text-white hover:-translate-y-0.5 hover:bg-white/15'
+                        }`}
+                    >
+                      Stop
+                    </button>
+                    <button
+                      onClick={checkApiConnection}
+                      className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+                    >
+                      Retry backend
+                    </button>
+                  </div>
                 </div>
-                <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-(--muted)">
-                  500 ms capture interval
-                </div>
+
               </div>
             </div>
 
-            <div className="p-4 sm:p-6">
-              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#050b12]">
-                <div className="relative aspect-video">
-                  <Webcam
-                    ref={webcamRef}
-                    videoConstraints={videoConstraints}
-                    screenshotFormat="image/jpeg"
-                    className="h-full w-full object-cover"
-                    mirrored={true}
-                  />
+            <div className="overflow-hidden rounded-3xl border border-white/10 bg-(--surface) shadow-[0_18px_50px_rgba(2,8,23,0.24)] flex flex-col flex-1">
+              <div className="border-b border-white/10 px-5 py-4 sm:px-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[0.68rem] uppercase tracking-[0.28em] text-(--muted)">
+                      Camera feed
+                    </p>
+                    <h2 className="mt-1 text-lg font-semibold text-white">
+                      Web camera stage
+                    </h2>
+                  </div>
+                  <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-(--muted)">
+                    500 ms capture interval
+                  </div>
+                </div>
+              </div>
 
-                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,11,18,0.02),rgba(5,11,18,0.1)_52%,rgba(5,11,18,0.3))]" />
-
-                  {isRunning && (
-                    <div className="absolute left-4 top-4 rounded-full border border-rose-400/30 bg-rose-500/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-rose-100 backdrop-blur-md">
-                      <span className="mr-2 inline-block h-2 w-2 rounded-full bg-rose-300 animate-pulse" />
-                      Live detection
-                    </div>
-                  )}
-
-                  {predictions.length > 0 && (
-                    <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/10 bg-[rgba(8,17,28,0.78)] p-4">
-                      <p className="text-[0.68rem] uppercase tracking-[0.26em] text-(--muted)">
-                        Detected sign
-                      </p>
+              <div className="mt-4 flex items-center justify-center px-4">
+                <div className="w-full max-w-4xl rounded-2xl border border-white/10 bg-[rgba(8,17,28,0.92)] px-4 py-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="text-[0.68rem] uppercase tracking-[0.18em] text-(--muted)">Detected</div>
+                      <div className="mt-2 text-3xl sm:text-4xl font-bold text-white leading-tight">
+                        {predictions[0]?.toUpperCase() ?? '—'}
+                      </div>
                       <div className="mt-3 flex flex-wrap gap-2">
-                        {predictions.map((pred, idx) => (
-                          <span
-                            key={`${pred}-${idx}`}
-                            className="rounded-full border border-[#8dd6ff]/20 bg-[#8dd6ff] px-4 py-2 text-sm font-semibold tracking-[0.08em] text-slate-950"
-                          >
-                            {pred.toUpperCase()}
-                          </span>
-                        ))}
+                        {predictions.length > 1
+                          ? predictions.slice(1, 6).map((pred, idx) => (
+                            <span
+                              key={`${pred}-${idx}`}
+                              className="rounded-full border border-[#8dd6ff]/20 bg-[#8dd6ff]/80 px-3 py-1 text-xs font-semibold tracking-[0.08em] text-slate-950"
+                            >
+                              {pred.toUpperCase()}
+                            </span>
+                          ))
+                          : (
+                            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-(--muted)">
+                              No additional predictions
+                            </span>
+                          )}
                       </div>
                     </div>
-                  )}
+
+                    <div className="hidden sm:flex flex-col items-end">
+                      <div className="text-sm text-(--muted)">Latest</div>
+                      <div className="mt-1 text-lg font-semibold text-white">{predictions[0]?.toUpperCase() ?? '—'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 sm:p-6 flex flex-col flex-1">
+                <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#050b12] flex-1">
+                  <div className="relative h-full">
+                    <Webcam
+                      ref={webcamRef}
+                      videoConstraints={videoConstraints}
+                      screenshotFormat="image/jpeg"
+                      className="h-full w-full object-cover"
+                      mirrored={true}
+                    />
+
+                    <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,11,18,0.02),rgba(5,11,18,0.1)_52%,rgba(5,11,18,0.3))]" />
+
+                    {isRunning && (
+                      <div className="absolute left-4 top-4 rounded-full border border-rose-400/30 bg-rose-500/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-rose-100 backdrop-blur-md">
+                        <span className="mr-2 inline-block h-2 w-2 rounded-full bg-rose-300 animate-pulse" />
+                        Live detection
+                      </div>
+                    )}
+
+                  </div>
+
+
 
                   {isLoading && (
                     <div className="absolute inset-0 grid place-items-center bg-slate-950/45 backdrop-blur-sm">
@@ -293,8 +297,12 @@ export default function SignLanguageDetector() {
                   </div>
                 </div>
               </div>
+
             </div>
           </div>
+
+
+
 
           <div className="grid gap-6">
             <aside className="rounded-3xl border border-white/10 bg-(--surface) p-6 shadow-[0_18px_50px_rgba(2,8,23,0.22)]">
@@ -366,9 +374,11 @@ export default function SignLanguageDetector() {
               </p>
             </aside>
           </div>
+
+
         </section>
-      </div>
-      <canvas ref={canvasRef} className="hidden" />
-    </main>
+
+      </div >
+    </main >
   );
 }

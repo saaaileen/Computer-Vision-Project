@@ -16,12 +16,17 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: none;
 }
 
 html,
 body {
-  height: 100%;
-  width: 100%;
+  /* Constrain to viewport to avoid oversized pages */
+  height: 100vh;
+  width: 100vw;
+  max-height: 100vh;
+  max-width: 100vw;
+  overflow: hidden;
   background:
     radial-gradient(
       circle at top left,
@@ -34,6 +39,8 @@ body {
       transparent 24%
     ),
     linear-gradient(180deg, #09111c 0%, #08111c 56%, #06101a 100%);
+  margin: 0;
+  padding: 0;
   color: var(--foreground);
   font-family:
     var(--font-space-grotesk),
@@ -71,10 +78,13 @@ body::after {
   );
 }
 
+/* The app root handles scrolling internally while staying within the viewport */
 #__next {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  overflow: auto;
 }
 
 ::selection {
