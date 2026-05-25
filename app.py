@@ -1,134 +1,64 @@
-import os
-import sys
+import io
+import cv2
 import joblib
 import numpy as np
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
+from flask import Flask, request, jsonify
+import mediapipe as mp
 
-# Setup FastAPI App
-app = FastAPI(title="SignSense ASL AI", description="Real-time American Sign Language Recognition API")
-
-# Enable CORS for external testing or complex frontends
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Constants & Paths
 MODEL_PATH = "svm_asl_mp_model.joblib"
 
-# Load the trained Model and Label Encoder
-if not os.path.exists(MODEL_PATH):
-    print(f"Error: Model file '{MODEL_PATH}' not found in current directory.", file=sys.stderr)
-    sys.exit(1)
+data = joblib.load(MODEL_PATH)
+model = data["model"]
+le = data["label_encoder"]
 
+# mediapipe helpers (compat)
 try:
-    print(f"Loading SVM model from '{MODEL_PATH}'...")
-    data = joblib.load(MODEL_PATH)
-    model = data["model"]
-    le = data["label_encoder"]
-    classes = list(le.classes_)
-    print(f"Model loaded successfully! Supported classes ({len(classes)}): {classes[:10]}... {classes[-10:]}")
-except Exception as e:
-    print(f"Failed to load the model: {e}", file=sys.stderr)
-    sys.exit(1)
+    mp_hands = mp.solutions.hands
+except AttributeError:
+    from mediapipe.python import solutions as _mps
+    mp_hands = _mps.hands
 
-# Request validation schema using Pydantic
-class Landmark(BaseModel):
-    x: float
-    y: float
-    z: float
+def predict_from_landmarks(hand_landmarks):
+    feats = []
+    for lm in hand_landmarks.landmark:
+        feats.extend([lm.x, lm.y, lm.z])
+    feats = np.array(feats)
+    feats = feats - feats.mean()
+    feats = feats / (feats.std() + 1e-6)
+    feats = feats.reshape(1, -1)
+    pred = model.predict(feats)
+    return le.inverse_transform(pred)[0]
 
-class PredictionRequest(BaseModel):
-    landmarks: List[Landmark]
+app = Flask(__name__)
 
-class DummyLandmark:
-    def __init__(self, x: float, y: float, z: float):
-        self.x = x
-        self.y = y
-        self.z = z
+@app.route("/predict", methods=["POST"])
+def predict():
+    if "image" not in request.files:
+        return jsonify({"error": "no image file provided"}), 400
+    file = request.files["image"]
+    data_bytes = file.read()
+    nparr = np.frombuffer(data_bytes, np.uint8)
+    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+    if img is None:
+        return jsonify({"error": "could not decode image"}), 400
 
-class DummyHandLandmarks:
-    def __init__(self, landmarks: List[Landmark]):
-        self.landmark = [DummyLandmark(lm.x, lm.y, lm.z) for lm in landmarks]
+    # MediaPipe expects RGB
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-def predict_from_landmarks(hand_landmarks_obj):
-    """
-    Replicates the prediction logic from SignLanguageImpl.py:
-    1. Extracts [x, y, z] features.
-    2. Subtracts the mean.
-    3. Normalizes by dividing by the standard deviation.
-    4. Reshapes and predicts via the SVM model.
-    """
-    features = []
-    for lm in hand_landmarks_obj.landmark:
-        features.extend([lm.x, lm.y, lm.z])
-    
-    features = np.array(features)
-    
-    # Normalize features exactly as done in training
-    mean_val = features.mean()
-    std_val = features.std()
-    features = features - mean_val
-    features = features / (std_val + 1e-6)
-    
-    features = features.reshape(1, -1)
-    
-    pred = model.predict(features)
-    raw_label = le.inverse_transform(pred)[0]
-    
-    # Handle numpy type serialization safely (NumPy 2.0 compatibility)
-    if isinstance(raw_label, bytes):
-        return raw_label.decode("utf-8")
-    elif hasattr(np, "bytes_") and isinstance(raw_label, np.bytes_):
-        return raw_label.decode("utf-8")
-    return str(raw_label)
+    with mp_hands.Hands(static_image_mode=True,
+                        model_complexity=0,
+                        min_detection_confidence=0.5) as hands:
+        results = hands.process(img_rgb)
 
-@app.post("/predict")
-async def predict(req: PredictionRequest):
-    try:
-        if len(req.landmarks) != 21:
-            raise HTTPException(status_code=400, detail="Must provide exactly 21 landmarks.")
-        
-        hand_landmarks_obj = DummyHandLandmarks(req.landmarks)
-        label = predict_from_landmarks(hand_landmarks_obj)
-        
-        return {
-            "status": "success",
-            "prediction": label
-        }
-    except Exception as e:
-        import traceback
-        print("Prediction exception caught:")
-        traceback.print_exc()
-        return JSONResponse(
-            status_code=500,
-            content={"status": "error", "message": f"Prediction failed: {str(e)}"}
-        )
+    if not results.multi_hand_landmarks:
+        return jsonify({"labels": [], "message": "No hand detected"})
 
-# Mount static files (will hold css/ and js/)
-os.makedirs("static", exist_ok=True)
-os.makedirs("templates", exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+    labels = []
+    for hand_landmarks in results.multi_hand_landmarks:
+        label = predict_from_landmarks(hand_landmarks)
+        labels.append(label)
 
-@app.get("/", response_class=HTMLResponse)
-async def get_index():
-    index_path = os.path.join("templates", "index.html")
-    if not os.path.exists(index_path):
-        return HTMLResponse(
-            "<h1>Frontend Template Missing</h1><p>Please wait for the server to finish building templates/index.html.</p>",
-            status_code=404
-        )
-    with open(index_path, "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    return jsonify({"labels": labels})
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+    app.run(host="0.0.0.0", port=5000)

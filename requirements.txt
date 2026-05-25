@@ -1,0 +1,8 @@
+Flask==2.3.3
+numpy==1.24.3
+matplotlib
+opencv-python==4.8.1.78
+joblib==1.3.2
+scikit-image==0.21.0
+mediapipe==0.10.14
+Werkzeug==2.3.7
