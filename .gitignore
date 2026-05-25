@@ -9,5 +9,5 @@ asl_dataset/
 *.ipynb
 svm_asl_hog_model.joblib
 svm_asl_model.joblib
-sv_asl_mp_model2.joblib
+svm_asl_mp_model2.joblib
 SignLanguageImpl.py
