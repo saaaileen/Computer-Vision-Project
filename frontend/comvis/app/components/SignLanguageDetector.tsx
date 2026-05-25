@@ -116,7 +116,7 @@ export default function SignLanguageDetector() {
     setPredictions([]);
     setHistory([]);
     // Capture every 500ms for real-time detection
-    intervalRef.current = setInterval(capture, 500);
+    intervalRef.current = setInterval(capture, 5000);
   };
 
   const handleStop = () => {
@@ -204,7 +204,7 @@ export default function SignLanguageDetector() {
                     </h2>
                   </div>
                   <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-(--muted)">
-                    500 ms capture interval
+                    5 s capture interval
                   </div>
                 </div>
               </div>
