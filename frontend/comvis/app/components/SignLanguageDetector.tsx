@@ -19,6 +19,37 @@ export default function SignLanguageDetector() {
   const [apiStatus, setApiStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
   const [history, setHistory] = useState<string[]>([]);
 
+  const statusCopy = {
+    checking: {
+      label: 'Checking backend',
+      tone: 'border-amber-500/30 bg-amber-500/10 text-amber-100',
+      dot: 'bg-amber-300',
+    },
+    connected: {
+      label: 'API connected',
+      tone: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100',
+      dot: 'bg-emerald-300',
+    },
+    disconnected: {
+      label: 'API offline',
+      tone: 'border-rose-500/30 bg-rose-500/10 text-rose-100',
+      dot: 'bg-rose-300',
+    },
+  }[apiStatus];
+
+  const quickStats = [
+    { label: 'Stream', value: isRunning ? 'Live' : 'Idle' },
+    { label: 'Latest', value: predictions[0]?.toUpperCase() ?? '—' },
+    { label: 'History', value: `${history.length} saved` },
+  ];
+
+  const steps = [
+    'Start the Flask API on port 5000.',
+    'Allow camera access when prompted.',
+    'Press Start Detection and show a sign.',
+    'Watch the live result and recent history update.',
+  ];
+
   // Check API connection on mount
   useEffect(() => {
     checkApiConnection();
@@ -103,209 +134,241 @@ export default function SignLanguageDetector() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-3 tracking-tight">
-            Sign Language Detector
-          </h1>
-          <p className="text-slate-400 text-lg">
-            Real-time ASL detection using AI and computer vision
-          </p>
-          <div className="mt-4 flex justify-center gap-2">
-            <div
-              className={`px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 ${
-                apiStatus === 'connected'
-                  ? 'bg-green-900 text-green-200'
-                  : apiStatus === 'checking'
-                    ? 'bg-yellow-900 text-yellow-200'
-                    : 'bg-red-900 text-red-200'
-              }`}
-            >
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  apiStatus === 'connected'
-                    ? 'bg-green-400'
-                    : apiStatus === 'checking'
-                      ? 'bg-yellow-400'
-                      : 'bg-red-400'
-                }`}
-              />
-              API Status:{' '}
-              {apiStatus === 'checking'
-                ? 'Checking...'
-                : apiStatus === 'connected'
-                  ? 'Connected'
-                  : 'Disconnected'}
+    <main className="min-h-screen px-4 py-6 sm:px-6 lg:px-8 overflow-auto">
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-7xl flex-col gap-6">
+        <section className="overflow-hidden rounded-3xl border border-white/10 bg-(--surface) shadow-[0_18px_50px_rgba(2,8,23,0.28)]">
+          <div className="px-6 py-8 sm:px-8 sm:py-9 lg:px-10">
+
+            <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+              <div className="max-w-3xl">
+                <div className="mb-5 flex flex-wrap items-center gap-3 text-[0.68rem] uppercase tracking-[0.26em] text-(--muted)">
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono">
+                    Live ASL recognition
+                  </span>
+                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono ${statusCopy.tone}`}>
+                    <span className={`h-2 w-2 rounded-full ${statusCopy.dot} animate-pulse`} />
+                    {statusCopy.label}
+                  </span>
+                </div>
+
+                <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-[3.5rem]">
+                  Computer Vision Project
+                </h1>
+                <p className="mt-4 max-w-2xl text-base leading-7 text-(--muted) sm:text-[1.05rem]">
+                  Keep the webcam central, surface the latest prediction without noise, and make the backend state obvious at a glance.
+                </p>
+
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <button
+                    onClick={handleStart}
+                    disabled={isRunning || apiStatus === 'disconnected'}
+                    className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 ${isRunning || apiStatus === 'disconnected'
+                      ? 'cursor-not-allowed border border-white/10 bg-white/5 text-slate-500'
+                      : 'border border-[#7fb7ff]/30 bg-[#8dd6ff] text-slate-950 shadow-[0_12px_30px_rgba(99,168,255,0.28)] hover:-translate-y-0.5 hover:bg-white'
+                      }`}
+                  >
+                    Start detection
+                  </button>
+                  <button
+                    onClick={handleStop}
+                    disabled={!isRunning}
+                    className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition-all duration-200 ${!isRunning
+                      ? 'cursor-not-allowed border border-white/10 bg-white/5 text-slate-500'
+                      : 'border border-white/10 bg-white/10 text-white hover:-translate-y-0.5 hover:bg-white/15'
+                      }`}
+                  >
+                    Stop
+                  </button>
+                  <button
+                    onClick={checkApiConnection}
+                    className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+                  >
+                    Retry backend
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                {quickStats.map((item) => (
+                  <div
+                    key={item.label}
+                    className="rounded-2xl border border-white/10 bg-(--surface-strong) px-4 py-4"
+                  >
+                    <p className="text-[0.68rem] uppercase tracking-[0.24em] text-(--muted)">
+                      {item.label}
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {item.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Webcam Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-slate-800 rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
-              <div className="relative bg-black aspect-video">
-                <Webcam
-                  ref={webcamRef}
-                  videoConstraints={videoConstraints}
-                  screenshotFormat="image/jpeg"
-                  className="w-full h-full object-cover"
-                />
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+          <div className="overflow-hidden rounded-3xl border border-white/10 bg-(--surface) shadow-[0_18px_50px_rgba(2,8,23,0.24)] ">
+            <div className="border-b border-white/10 px-5 py-4 sm:px-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[0.68rem] uppercase tracking-[0.28em] text-(--muted)">
+                    Camera feed
+                  </p>
+                  <h2 className="mt-1 text-lg font-semibold text-white">
+                    Web camera stage
+                  </h2>
+                </div>
+                <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-(--muted)">
+                  500 ms capture interval
+                </div>
+              </div>
+            </div>
 
-                {/* Overlay Info */}
-                {isRunning && (
-                  <div className="absolute top-4 left-4 flex items-center gap-2">
-                    <div className="flex items-center gap-2 bg-red-900/80 px-4 py-2 rounded-lg backdrop-blur">
-                      <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                      <span className="text-white font-semibold text-sm">
-                        Live Detection
-                      </span>
+            <div className="p-4 sm:p-6">
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#050b12]">
+                <div className="relative aspect-video">
+                  <Webcam
+                    ref={webcamRef}
+                    videoConstraints={videoConstraints}
+                    screenshotFormat="image/jpeg"
+                    className="h-full w-full object-cover"
+                    mirrored={true}
+                  />
+
+                  <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(5,11,18,0.02),rgba(5,11,18,0.1)_52%,rgba(5,11,18,0.3))]" />
+
+                  {isRunning && (
+                    <div className="absolute left-4 top-4 rounded-full border border-rose-400/30 bg-rose-500/15 px-3 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-rose-100 backdrop-blur-md">
+                      <span className="mr-2 inline-block h-2 w-2 rounded-full bg-rose-300 animate-pulse" />
+                      Live detection
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Current Prediction */}
-                {predictions.length > 0 && (
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <div className="bg-blue-600/90 backdrop-blur rounded-lg p-4 border-2 border-blue-400">
-                      <p className="text-white text-xs font-semibold tracking-widest uppercase">
-                        Detected Signs
+                  {predictions.length > 0 && (
+                    <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/10 bg-[rgba(8,17,28,0.78)] p-4">
+                      <p className="text-[0.68rem] uppercase tracking-[0.26em] text-(--muted)">
+                        Detected sign
                       </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
                         {predictions.map((pred, idx) => (
                           <span
-                            key={idx}
-                            className="bg-blue-500 text-white px-4 py-2 rounded-full font-bold text-lg"
+                            key={`${pred}-${idx}`}
+                            className="rounded-full border border-[#8dd6ff]/20 bg-[#8dd6ff] px-4 py-2 text-sm font-semibold tracking-[0.08em] text-slate-950"
                           >
                             {pred.toUpperCase()}
                           </span>
                         ))}
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full border-4 border-slate-600 border-t-blue-500 animate-spin mb-3" />
-                      <span className="text-white font-semibold">Processing...</span>
+                  {isLoading && (
+                    <div className="absolute inset-0 grid place-items-center bg-slate-950/45 backdrop-blur-sm">
+                      <div className="rounded-2xl border border-white/10 bg-[rgba(8,17,28,0.9)] px-5 py-4 text-center">
+                        <div className="mx-auto mb-3 h-10 w-10 rounded-full border-4 border-white/15 border-t-[#8dd6ff] animate-spin" />
+                        <p className="text-sm font-medium text-white">Analyzing frame</p>
+                        <p className="mt-1 text-xs text-slate-300">Sending the current image to the classifier.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="border-t border-white/10 bg-(--surface-strong) px-5 py-4 sm:px-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm text-slate-300">
+                      Real-time capture is only active while detection is running.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-slate-300">
+                        MediaPipe landmarks
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-slate-300">
+                        SVM classifier
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-slate-300">
+                        Webcam input
+                      </span>
                     </div>
                   </div>
-                )}
-              </div>
-
-              {/* Controls */}
-              <div className="bg-gradient-to-r from-slate-700 to-slate-800 p-6">
-                <div className="flex gap-4">
-                  <button
-                    onClick={handleStart}
-                    disabled={isRunning || apiStatus === 'disconnected'}
-                    className={`flex-1 py-3 px-6 rounded-xl font-bold text-lg transition-all duration-200 ${
-                      isRunning
-                        ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                        : apiStatus === 'disconnected'
-                          ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                          : 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-green-900/50'
-                    }`}
-                  >
-                    ▶ Start Detection
-                  </button>
-                  <button
-                    onClick={handleStop}
-                    disabled={!isRunning}
-                    className={`flex-1 py-3 px-6 rounded-xl font-bold text-lg transition-all duration-200 ${
-                      !isRunning
-                        ? 'bg-slate-600 text-slate-400 cursor-not-allowed'
-                        : 'bg-red-600 hover:bg-red-700 text-white shadow-lg hover:shadow-red-900/50'
-                    }`}
-                  >
-                    ⏹ Stop
-                  </button>
-                  <button
-                    onClick={checkApiConnection}
-                    className="py-3 px-6 rounded-xl font-bold text-lg bg-slate-600 hover:bg-slate-700 text-white transition-all duration-200"
-                  >
-                    🔄 Retry
-                  </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Sidebar Panel */}
-          <div className="space-y-6">
-            {/* Instructions */}
-            <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                📋 How to Use
+          <div className="grid gap-6">
+            <aside className="rounded-3xl border border-white/10 bg-(--surface) p-6 shadow-[0_18px_50px_rgba(2,8,23,0.22)]">
+              <p className="text-[0.68rem] uppercase tracking-[0.28em] text-(--muted)">
+                Workflow
+              </p>
+              <h3 className="mt-2 text-xl font-semibold text-white">
+                How to run it
               </h3>
-              <ol className="space-y-3 text-slate-300 text-sm">
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-400 flex-shrink-0">1</span>
-                  <span>Make sure Flask API is running on port 5000</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-400 flex-shrink-0">2</span>
-                  <span>Click "Start Detection" to begin</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-400 flex-shrink-0">3</span>
-                  <span>Show hand signs to the camera</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-400 flex-shrink-0">4</span>
-                  <span>See predictions in real-time</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="font-bold text-blue-400 flex-shrink-0">5</span>
-                  <span>Click "Stop" to end detection</span>
-                </li>
-              </ol>
-            </div>
+              <div className="mt-5 space-y-3">
+                {steps.map((step, index) => (
+                  <div
+                    key={step}
+                    className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-sm font-semibold text-white">
+                      {index + 1}
+                    </div>
+                    <p className="pt-1 text-sm leading-6 text-slate-200">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </aside>
 
-            {/* Detection History */}
-            <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl">
-              <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                📜 Detection History
-              </h3>
-              <div className="space-y-2 max-h-96 overflow-y-auto">
-                {history.length === 0 ? (
-                  <p className="text-slate-500 text-sm italic">
-                    No detections yet. Start detection to see history.
+            <aside className="rounded-3xl border border-white/10 bg-(--surface) p-6 shadow-[0_18px_50px_rgba(2,8,23,0.22)]">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[0.68rem] uppercase tracking-[0.28em] text-(--muted)">
+                    Prediction trail
                   </p>
+                  <h3 className="mt-2 text-xl font-semibold text-white">
+                    Recent detections
+                  </h3>
+                </div>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-mono uppercase tracking-[0.22em] text-(--muted)">
+                  Latest 10
+                </span>
+              </div>
+
+              <div className="mt-5 max-h-96 space-y-3 overflow-y-auto pr-1">
+                {history.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-4 py-6 text-sm text-(--muted)">
+                    No predictions yet. Start the stream to fill this panel.
+                  </div>
                 ) : (
                   history.map((item, idx) => (
                     <div
-                      key={idx}
-                      className="bg-slate-700/50 hover:bg-slate-700 rounded-lg px-4 py-3 transition-colors"
+                      key={`${item}-${idx}`}
+                      className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-xs">
-                          #{history.length - idx}
-                        </span>
-                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full font-bold text-sm">
-                          {item.toUpperCase()}
-                        </span>
-                      </div>
+                      <span className="text-xs uppercase tracking-[0.26em] text-(--muted)">
+                        #{history.length - idx}
+                      </span>
+                      <span className="rounded-full border border-[#8dd6ff]/20 bg-[#8dd6ff] px-3 py-1 text-sm font-semibold text-slate-950">
+                        {item.toUpperCase()}
+                      </span>
                     </div>
                   ))
                 )}
               </div>
-            </div>
+            </aside>
 
-            {/* Info Card */}
-            <div className="bg-gradient-to-br from-blue-900 to-blue-800 rounded-2xl p-6 border border-blue-700 shadow-xl">
-              <p className="text-blue-100 text-sm leading-relaxed">
-                💡 This detector uses MediaPipe for hand landmark tracking and an SVM classifier for sign recognition.
+            <aside className="rounded-3xl border border-white/10 bg-(--surface) p-6 shadow-[0_18px_50px_rgba(2,8,23,0.22)]">
+              <p className="text-[0.7rem] uppercase tracking-[0.28em] text-white/70">
+                Implementation note
               </p>
-            </div>
+              <p className="mt-3 text-sm leading-7 text-white/88">
+                The detector combines MediaPipe hand landmarks with an SVM model, so the interface stays focused on the camera stream and the most recent output instead of decorative noise.
+              </p>
+            </aside>
           </div>
-        </div>
+        </section>
       </div>
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
-    </div>
+      <canvas ref={canvasRef} className="hidden" />
+    </main>
   );
 }

@@ -1,21 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
+  --background: #08111c;
+  --background-soft: #0d1726;
+  --surface: rgba(10, 18, 31, 0.72);
+  --surface-strong: rgba(15, 25, 42, 0.92);
+  --border: rgba(148, 163, 184, 0.16);
+  --border-strong: rgba(148, 163, 184, 0.28);
+  --foreground: #e5eef9;
+  --muted: #94a3b8;
+  --accent: #8dd6ff;
+  --accent-strong: #63a8ff;
   color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
 }
 
@@ -23,19 +22,64 @@ html,
 body {
   height: 100%;
   width: 100%;
-  background: var(--background);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(99, 168, 255, 0.18),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(141, 214, 255, 0.1),
+      transparent 24%
+    ),
+    linear-gradient(180deg, #09111c 0%, #08111c 56%, #06101a 100%);
   color: var(--foreground);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family:
+    var(--font-space-grotesk),
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 86%);
+  opacity: 0.16;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.16) 100%
+  );
 }
 
 #__next {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+}
+
+::selection {
+  background: rgba(99, 168, 255, 0.28);
+  color: #ffffff;
 }
 
 /* Scrollbar Styling */
@@ -45,25 +89,29 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: rgba(15, 23, 42, 0.85);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #46637f, #2f465d);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: linear-gradient(180deg, #5f7d98, #3f5970);
 }
 
-/* Smooth transitions */
 * {
-  @apply transition-all duration-200;
+  box-sizing: border-box;
 }
 
 button {
-  @apply cursor-pointer;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
 /* Animation for pulse effect */
@@ -90,3 +138,19 @@ button {
 
 .animate-spin {
   animation: spin 1s linear infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}

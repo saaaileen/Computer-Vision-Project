@@ -5,7 +5,7 @@ from skimage.feature import hog
 import mediapipe as mp
 import numpy as np
 
-MODEL_PATH = "svm_asl_mp_model.joblib"
+MODEL_PATH = "svm_asl_mp_model2.joblib"
 IMG_SIZE = (64, 64)
 STABILITY_FRAMES = 7
 STABILITY_THRESHOLD = 5
