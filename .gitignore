@@ -6,6 +6,4 @@ env/
 environments/
 vision/
 asl_dataset/
-Sign_Lang_MP.ipynb
-Sign_Language.ipynb
-SignLanguageImpl.py
+*.ipynb
