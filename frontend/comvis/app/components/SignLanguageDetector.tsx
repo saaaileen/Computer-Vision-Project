@@ -83,7 +83,7 @@ export default function SignLanguageDetector() {
       const formData = new FormData();
       formData.append('image', blob, 'frame.jpg');
 
-      const result = await fetch('http://localhost:5000/predict', {
+      const result = await fetch('https://computer-vision-project-nhm5.onrender.com/predict', {
         method: 'POST',
         body: formData,
       });
