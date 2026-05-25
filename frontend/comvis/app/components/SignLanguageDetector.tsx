@@ -58,7 +58,7 @@ export default function SignLanguageDetector() {
   const checkApiConnection = async () => {
     try {
       setApiStatus('checking');
-      const response = await fetch('http://localhost:5000/predict', {
+      const response = await fetch('https://computer-vision-project-nhm5.onrender.com/predict', {
         method: 'OPTIONS',
       }).catch(() => null);
       setApiStatus(response ? 'connected' : 'disconnected');
