@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 import mediapipe as mp
 from flask_cors import CORS
 
-MODEL_PATH = "svm_asl_mp_model.joblib"
+MODEL_PATH = "svm_asl_mp_model_fixed.joblib"
 
 data = joblib.load(MODEL_PATH)
 model = data["model"]
